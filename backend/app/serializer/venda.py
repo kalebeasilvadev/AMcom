@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from django.utils.timezone import now
 from rest_framework import serializers
 
+from app.constants import DiaSemana
 from app.models import Comissao, ItemVenda, Produto, Venda, Vendedor
 
 
@@ -46,8 +46,7 @@ class VendaSerializer(serializers.ModelSerializer):
         model = Venda
         fields = "__all__"
 
-    def valida_comissao(self, produto: Produto):
-        dia_semana = now().weekday()
+    def valida_comissao(self, produto: Produto, dia_semana=None):
         comissao = Comissao.objects.filter(dia_da_semana=dia_semana).first()
 
         percentual_comissao = produto.percentual_comissao
@@ -77,16 +76,14 @@ class VendaSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         itens_data = validated_data.pop("itens")
         data_hora_str = self.initial_data["data_hora"]
-        data_hora = datetime.strptime(
-            data_hora_str, "%Y-%m-%dT%H:%M"
-        )  # Adjust the format as needed
+        data_hora = datetime.strptime(data_hora_str, "%Y-%m-%dT%H:%M")
         data_venda = data_hora.strftime("%d/%m/%Y %H:%M")
 
         validated_data["numero_nota"] = (
             Venda.objects.latest("id").id + 1 if Venda.objects.exists() else 1
         )
         venda = Venda.objects.create(**validated_data)
-        dia_semana = data_hora.weekday()
+        dia_semana = DiaSemana[data_hora.strftime("%A")].value
 
         for item_data in itens_data:
             produto = item_data["produto"]
@@ -96,7 +93,7 @@ class VendaSerializer(serializers.ModelSerializer):
                 produto=produto,
                 valor_unitario=produto.valor_unitario,
                 percentual_comissao=produto.percentual_comissao,
-                percentual_comissao_vendedor=self.valida_comissao(produto),
+                percentual_comissao_vendedor=self.valida_comissao(produto, dia_semana),
                 quantidade=item_data["quantidade"],
             )
 

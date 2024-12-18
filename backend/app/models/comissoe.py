@@ -3,7 +3,19 @@ from django.db import models
 
 
 class Comissao(BaseModel):
-    dia_da_semana = models.CharField(max_length=10, unique=True)
+    dia_da_semana = models.CharField(
+        max_length=10,
+        unique=True,
+        choices=[
+            ("Segunda", "Segunda"),
+            ("Terça", "Terça"),
+            ("Quarta", "Quarta"),
+            ("Quinta", "Quinta"),
+            ("Sexta", "Sexta"),
+            ("Sábado", "Sábado"),
+            ("Domingo", "Domingo"),
+        ],
+    )
     percentual_minimo = models.FloatField()
     percentual_maximo = models.FloatField()
 

@@ -35,5 +35,5 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
-    path("docs", schema_view.with_ui("swagger", cache_timeout=0)),
+    path("docs/", schema_view.with_ui("swagger", cache_timeout=0)),
 ]
